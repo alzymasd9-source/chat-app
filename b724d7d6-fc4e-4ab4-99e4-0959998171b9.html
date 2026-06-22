@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <base target="_self">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>دردشة عربية مجانية</title>
+    <meta name="description" content="تطبيق دردشة عربي مجاني مع واجهة مستخدم حديثة">
+    <meta name="keywords" content="دردشة عربية, شات مجاني, تواصل عربي">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#3B82F6",
+                        secondary: "#10B981",
+                        accent: "#8B5CF6",
+                        dark: "#1F2937",
+                        light: "#F9FAFB"
+                    },
+                    fontFamily: {
+                        'cairo': ['Cairo', 'sans-serif']
+                    },
+                    spacing: {
+                        '18': '4.5rem',
+                        '88': '22rem'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+        }
+        .message-bubble {
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+        .scrollbar-thin {
+            scrollbar-width: thin;
+        }
+        .scrollbar-thin::-webkit-scrollbar {
+            width: 6px;
+        }
+        .scrollbar-thin::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        .scrollbar-thin::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 font-cairo">
+    <!-- Header -->
+    <header class="bg-white shadow-lg">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4 space-x-reverse">
+                    <div class="w-12 h-12 bg-gradient-to-r from-primary to-accent rounded-full flex items-center justify-center">
+                        <i class="fas fa-comments text-white text-xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold text-dark">دردشة عربية مجانية</h1>
+                        <p class="text-gray-600">تواصل مع الأصدقاء باللغة العربية</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-center space-x-4 space-x-reverse">
+                    <div id="online-users" class="hidden md:flex items-center space-x-2 space-x-reverse">
+                        <span class="w-3 h-3 bg-green-500 rounded-full animate-pulse"></span>
+                        <span class="text-gray-600" id="online-count">0</span>
+                        <span class="text-gray-600">مستخدم متصل</span>
+                    </div>
+                    <button id="theme-toggle" class="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors">
+                        <i class="fas fa-moon text-gray-700"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Chat Area -->
+    <main class="container mx-auto px-4 py-6">
+        <div class="flex flex-col lg:flex-row gap-6">
+            <!-- Sidebar - Online Users -->
+            <aside class="lg:w-1/4">
+                <div class="bg-white rounded-xl shadow-lg p-4 mb-6">
+                    <h2 class="text-lg font-semibold text-dark mb-4 border-b pb-2">المستخدمون المتصلون</h2>
+                    <div id="users-list" class="space-y-3 max-h-96 overflow-y-auto scrollbar-thin"></div>
+                </div>
+                
+                <div class="bg-white rounded-xl shadow-lg p-4">
+                    <h2 class="text-lg font-semibold text-dark mb-4 border-b pb-2">غرف الدردشة</h2>
+                    <div id="rooms-list" class="space-y-2"></div>
+                </div>
+            </aside>
+
+            <!-- Chat Container -->
+            <section class="lg:w-3/4">
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden flex flex-col h-[600px]">
+                    <!-- Chat Header -->
+                    <div class="bg-gradient-to-r from-primary to-accent p-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-3 space-x-reverse">
+                                <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-users text-white"></i>
+                                </div>
+                                <div>
+                                    <h2 class="text-xl font-bold text-white">الغرفة العامة</h2>
+                                    <p class="text-white/80 text-sm" id="room-description">دردشة عامة للجميع</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-3 space-x-reverse">
+                                <button id="clear-chat" class="p-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors text-white">
+                                    <i class="fas fa-trash-alt"></i>
+                                    <span class="mr-2">مسح المحادثة</span>
+                                </button>
+                                <button id="emoji-toggle" class="p-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors text-white">
+                                    <i class="far fa-smile"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Messages Area -->
+                    <div id="messages-container" class="flex-1 overflow-y-auto p-4 bg-gray-50 scrollbar-thin">
+                        <div id="messages-list" class="space-y-4"></div>
+                    </div>
+
+                    <!-- Emoji Picker (Hidden by default) -->
+                    <div id="emoji-picker" class="hidden bg-white border-t p-3">
+                        <div class="flex flex-wrap gap-2">
+                            <button class="emoji-btn w-8 h-8 text-lg hover:bg-gray-100 rounded">😊</button>
+                            <button class="emoji-btn w-8 h-8 text-lg hover:bg-gray-100 rounded">😂</button>
+                            <button class="emoji-btn w-8 h-8 text-lg hover:bg-gray-100 rounded">❤️</button>
+                            <button class="emoji-btn w-8 h-8 text-lg hover:bg-gray-100 rounded">👍</button>
+                            <button class="emoji-btn w-8 h-8 text-lg hover:bg-gray-100 rounded">👋</button>
+                            <button class="emoji-btn w-8 h-8 text-lg hover:bg-gray-100 rounded">🎉</button>
+                            <button class="emoji-btn w-8 h-8 text-lg hover:bg-gray-100 rounded">🔥</button>
+                            <button class="emoji-btn w-8 h-8 text-lg hover:bg-gray-100 rounded">✨</button>
+                        </div>
+                    </div>
+
+                    <!-- Message Input -->
+                    <div class="border-t p-4 bg-white">
+                        <div class="flex items-center space-x-3 space-x-reverse">
+                            <button id="attach-btn" class="p-3 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors">
+                                <i class="fas fa-paperclip text-gray-600"></i>
+                            </button>
+                            <div class="flex-1 relative">
+                                <input 
+                                    type="text" 
+                                    id="message-input" 
+                                    placeholder="اكتب رسالتك هنا..." 
+                                    class="w-full p-4 pr-12 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                                    autocomplete="off"
+                                >
+                                <button id="voice-btn" class="absolute left-3 top-1/2 transform -translate-y-1/2 p-2">
+                                    <i class="fas fa-microphone text-gray-400 hover:text-primary transition-colors"></i>
+                                </button>
+                            </div>
+                            <button id="send-btn" class="p-4 bg-gradient-to-r from-primary to-accent text-white rounded-xl hover:opacity-90 transition-opacity">
+                                <i class="fas fa-paper-plane"></i>
+                                <span class="mr-2">إرسال</span>
+                            </button>
+                        </div>
+                        <div class="mt-3 flex flex-wrap gap-2">
+                            <button class="quick-msg px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm transition-colors">مرحباً 👋</button>
+                            <button class="quick-msg px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm transition-colors">كيف الحال؟ 😊</button>
+                            <button class="quick-msg px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm transition-colors">شكراً لك 🙏</button>
+                            <button class="quick-msg px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm transition-colors">أنا هنا 🎯</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chat Features -->
+                <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="bg-white rounded-xl shadow-lg p-4">
+                        <div class="flex items-center space-x-3 space-x-reverse mb-3">
+                            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-shield-alt text-primary text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-dark">آمن ومحمي</h3>
+                                <p class="text-gray-600 text-sm">محادثات مشفرة لحماية خصوصيتك</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-xl shadow-lg p-4">
+                        <div class="flex items-center space-x-3 space-x-reverse mb-3">
+                            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-bolt text-secondary text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-dark">سريع وفوري</h3>
+                                <p class="text-gray-600 text-sm">رسائل تصل في أقل من ثانية</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-xl shadow-lg p-4">
+                        <div class="flex items-center space-x-3 space-x-reverse mb-3">
+                            <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-language text-accent text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-dark">دعم عربي كامل</h3>
+                                <p class="text-gray-600 text-sm">واجهة ومساعدة باللغة العربية</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white mt-8">
+        <div class="container mx-auto px-4 py-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <h3 class="text-xl font-bold mb-4">دردشة عربية مجانية</h3>
+                    <p class="text-gray-300">منصة تواصل عربية تتيح لك الدردشة مع الأصدقاء والمجتمعات الناطقة بالعربية.</p>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold mb-4 border-b border-gray-700 pb-2">روابط سريعة</h4>
+                    <ul id="footer-links" class="space-y-2"></ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold mb-4 border-b border-gray-700 pb-2">ميزاتنا</h4>
+                    <ul id="features-list" class="space-y-2"></ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold mb-4 border-b border-gray-700 pb-2">اتصل بنا</h4>
+                    <div class="space-y-3">
+                        <div class="flex items-center space-x-3 space-x-reverse">
+                            <i class="fas fa-envelope text-gray-300"></i>
+                            <span class="text-gray-300">info@arabic-chat.com</span>
+                        </div>
+                        <div class="flex items-center space-x-3 space-x-reverse">
+                            <i class="fas fa-phone text-gray-300"></i>
+                            <span class="text-gray-300">+966 123 456 789</span>
+                        </div>
+                        <div class="flex space-x-4 space-x-reverse mt-4">
+                            <a href="#" class="w-10 h-10 bg-gray-800 hover:bg-gray-700 rounded-full flex items-center justify-center transition-colors">
+                                <i class="fab fa-twitter"></i>
+                            </a>
+                            <a href="#" class="w-10 h-10 bg-gray-800 hover:bg-gray-700 rounded-full flex items-center justify-center transition-colors">
+                                <i class="fab fa-facebook-f"></i>
+                            </a>
+                            <a href="#" class="w-10 h-10 bg-gray-800 hover:bg-gray-700 rounded-full flex items-center justify-center transition-colors">
+                                <i class="fab fa-instagram"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
+                <p>© 2024 دردشة عربية مجانية. جميع الحقوق محفوظة.</p>
+                <p class="mt-2 text-sm">هذا تطبيق تجريبي للعرض فقط</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- User Modal -->
+    <div id="user-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6">
+            <h3 class="text-xl font-bold text-dark mb-4">اختر اسم المستخدم</h3>
+            <input type="text" id="username-input" placeholder="أدخل اسمك..." class="w-full p-3 border border-gray-300 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-primary">
+            <div class="flex justify-end space-x-3 space-x-reverse">
+                <button id="cancel-user" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">إلغاء</button>
+                <button id="save-user" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-600 transition-colors">حفظ</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data Layer
+        const usersData = [
+            { "id": 1, "name": "أحمد محمد", "avatar": "https://picsum.photos/100?random=1", "status": "online", "lastSeen": "الآن" },
+            { "id": 2, "name": "سارة علي", "avatar": "https://picsum.photos/100?random=2", "status": "online", "lastSeen": "قبل 2 دقيقة" },
+            { "id": 3, "name": "خالد عبدالله", "avatar": "https://picsum.photos/100?random=3", "status": "away", "lastSeen": "قبل 5 دقائق" },
+            { "id": 4, "name": "فاطمة حسن", "avatar": "https://picsum.photos/100?random=4", "status": "online", "lastSeen": "الآن" },
+            { "id": 5, "name": "محمد إبراهيم", "avatar": "https://picsum.photos/100?random=5", "status": "offline", "lastSeen": "قبل ساعة" },
+            { "id": 6, "name": "نورة سعد", "avatar": "https://picsum.photos/100?random=6", "status": "online", "lastSeen": "الآن" }
+        ];
+
+        const chatRooms = [
+            { "id": 1, "name": "الغرفة العامة", "description": "دردشة عامة للجميع", "users": 24, "icon": "fas fa-users" },
+            { "id": 2, "name": "التقنية والتكنولوجيا", "description": "مناقشات تقنية وبرمجية", "users": 18, "icon": "fas fa-laptop-code" },
+            { "id": 3, "name": "الرياضة", "description": "أخبار الرياضة والمباريات", "users": 12, "icon": "fas fa-futbol" },
+            { "id": 4, "name": "الطبخ والأكلات", "description": "وصفات وأكلات عربية", "users": 15, "icon": "fas fa-utensils" }
+        ];
+
+        const initialMessages = [
+            { "id": 1, "sender": "system", "text": "مرحباً بكم في الدردشة العربية المجانية! ابدأوا بالتواصل مع الأصدقاء.", "time": "10:00 ص", "type": "system" },
+            { "id": 2, "sender": "أحمد محمد", "text": "السلام عليكم جميعاً 😊", "time": "10:05 ص", "type": "received", "avatar": "https://picsum.photos/100?random=1" },
+            { "id": 3, "sender": "سارة علي", "text": "وعليكم السلام ورحمة الله وبركاته! كيف حالكم اليوم؟", "time": "10:07 ص", "type": "received", "avatar": "https://picsum.photos/100?random=2" },
+            { "id": 4, "sender": "Me", "text": "الحمد لله بخير، شكراً لسؤالك! اليوم جميل للدردشة ☀️", "time": "10:10 ص", "type": "sent" }
+        ];
+
+        const footerLinks = [
+            { "label": "الخصوصية", "href": "#privacy" },
+            { "label": "الشروط والأحكام", "href": "#terms" },
+            { "label": "المساعدة", "href": "#help" },
+            { "label": "عن الموقع", "href": "#about" },
+            { "label": "اتصل بنا", "href": "#contact" }
+        ];
+
+        const featuresList = [
+            { "label": "دردشة مجانية", "icon": "fas fa-comment" },
+            { "label": "دعم اللغة العربية", "icon": "fas fa-language" },
+            { "label": "مشاركة الوسائط", "icon": "fas fa-image" },
+            { "label": "غرف متعددة", "icon": "fas fa-door-open" },
+            { "label": "محادثات خاصة", "icon": "fas fa-lock" },
+            { "label": "بدون إعلانات", "icon": "fas fa-ad" }
+        ];
+
+        const quickMessages = [
+            "مرحباً 👋",
+            "كيف الحال؟ 😊",
+            "شكراً لك 🙏",
+            "أنا هنا 🎯",
+            "متفق 👍",
+            "انتظر لحظة ⏳",
+            "حسناً 👌",
+            "معك حق ✅"
+        ];
+
+        // App State
+        let currentUser = localStorage.getItem('chat-username') || '';
+        let messages = [...initialMessages];
+        let onlineUsers = usersData.filter(user => user.status === 'online').length;
+
+        // Reusable Render Functions
+        function renderUsersList(users) {
+            return users.map(user => `
+                <div class="flex items-center justify-between p-2 hover:bg-gray-50 rounded-lg transition-colors">
+                    <div class="flex items-center space-x-3 space-x-reverse">
+                        <div class="relative">
+                            <img src="${user.avatar}" alt="${user.name}" class="w-10 h-10 rounded-full object-cover">
+                            <span class="absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white ${user.status === 'online' ? 'bg-green-500' : user.status === 'away' ? 'bg-yellow-500' : 'bg-gray-400'}"></span>
+                        </div>
+                        <div>
+                            <h4 class="font-medium text-dark">${user.name}</h4>
+                            <p class="text-xs text-gray-500">${user.lastSeen}</p>
+                        </div>
+                    </div>
+                    <button class="message-user p-2 text-primary hover:bg-blue-50 rounded-lg transition-colors" data-user="${user.id}">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function renderChatRooms(rooms) {
+            return rooms.map(room => `
+                <button class="room-btn w-full text-right p-3 hover:bg-gray-50 rounded-lg transition-colors flex items-center justify-between" data-room="${room.id}">
+                    <div class="flex items-center space-x-3 space-x-reverse">
+                        <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <i class="${room.icon} text-primary"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-medium text-dark">${room.name}</h4>
+                            <p class="text-sm text-gray-500">${room.description}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2 space-x-reverse">
+                        <span class="text-sm text-gray-600">${room.users}</span>
+                        <i class="fas fa-user text-gray-400"></i>
+                    </div>
+                </button>
+            `).join('');
+        }
+
+        function renderMessages(messagesList) {
+            return messagesList.map(msg => {
+                if (msg.type === 'system') {
+                    return `
+                        <div class="text-center my-4">
+                            <span class="inline-block px-4 py-2 bg-gray-100 text-gray-700 rounded-full text-sm">
+                                ${msg.text}
+                            </span>
+                            <p class="text-xs text-gray-500 mt-1">${msg.time}</p>
+                        </div>
+                    `;
+                }
+                
+                if (msg.type === 'sent') {
+                    return `
+                        <div class="flex justify-end">
+                            <div class="message-bubble bg-gradient-to-l from-primary to-accent text-white p-4 rounded-2xl rounded-tr-none">
+                                <p>${msg.text}</p>
+                                <p class="text-xs text-white/80 mt-1 text-left">${msg.time}</p>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                return `
+                    <div class="flex items-start space-x-3 space-x-reverse">
+                        <img src="${msg.avatar}" alt="${msg.sender}" class="w-10 h-10 rounded-full object-cover">
+                        <div class="message-bubble bg-white border border-gray-200 p-4 rounded-2xl rounded-tl-none shadow-sm">
+                            <h5 class="font-semibold text-dark mb-1">${msg.sender}</h5>
+                            <p class="text-gray-800">${msg.text}</p>
+                            <p class="text-xs text-gray-500 mt-1">${msg.time}</p>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderFooterLinks(links) {
+            return links.map(link => `
+                <li>
+                    <a href="${link.href}" class="text-gray-300 hover:text-white transition-colors">
+                        <i class="fas fa-chevron-left ml-2 text-xs"></i>
+                        ${link.label}
+                    </a>
+                </li>
+            `).join('');
+        }
+
+        function renderFeatures(features) {
+            return features.map(feature => `
+                <li class="flex items-center">
+                    <i class="${feature.icon} ml-2 text-gray-300"></i>
+                    <span class="text-gray-300 hover:text-white transition-colors">${feature.label}</span>
+                </li>
+            `).join('');
+        }
+
+        function renderQuickMessages(messages) {
+            return messages.map(msg => `
+                <button class="quick-msg px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm transition-colors">${msg}</button>
+            `).join('');
+        }
+
+        // Initialize UI
+        function initializeUI() {
+            // Render all data-driven sections
+            document.getElementById('users-list').innerHTML = renderUsersList(usersData);
+            document.getElementById('rooms-list').innerHTML = renderChatRooms(chatRooms);
+            document.getElementById('messages-list').innerHTML = renderMessages(messages);
+            document.getElementById('footer-links').innerHTML = renderFooterLinks(footerLinks);
+            document.getElementById('features-list').innerHTML = renderFeatures(featuresList);
+            document.getElementById('online-count').textContent = onlineUsers;
+            
+            // Update quick messages
+            const quickMsgContainer = document.querySelector('.flex-wrap.gap-2');
+            if (quickMsgContainer) {
+                quickMsgContainer.innerHTML = renderQuickMessages(quickMessages);
+            }
+            
+            // Show user modal if no username
+            if (!currentUser) {
+                document.getElementById('user-modal').classList.remove('hidden');
+                document.getElementById('user-modal').classList.add('flex');
+            }
+            
+            // Scroll to bottom of messages
+            const messagesContainer = document.getElementById('messages-container');
+            if (messagesContainer) {
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }
+        }
+
+        // Event Handlers
+        function setupEventHandlers() {
+            // Send message
+            document.getElementById('send-btn').addEventListener('click', sendMessage);
+            document.getElementById('message-input').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+
+            // Quick messages
+            document.addEventListener('click', (e) => {
+                if (e.target.classList.contains('quick-msg')) {
+                    document.getElementById('message-input').value = e.target.textContent;
+                    document.getElementById('message-input').focus();
+                }
+            });
+
+            // Emoji buttons
+            document.addEventListener('click', (e) => {
+                if (e.target.classList.contains('emoji-btn')) {
+                    const input = document.getElementById('message-input');
+                    input.value += e.target.textContent;
+                    input.focus();
+                }
+            });
+
+            // Clear chat
+            document.getElementById('clear-chat').addEventListener('click', () => {
+                if (confirm('هل تريد مسح جميع الرسائل؟')) {
+                    messages = messages.filter(msg => msg.type === 'system');
+                    document.getElementById('messages-list').innerHTML = renderMessages(messages);
+                }
+            });
+
+            // Toggle emoji picker
+            document.getElementById('emoji-toggle').addEventListener('click', () => {
+                const picker = document.getElementById('emoji-picker');
+                picker.classList.toggle('hidden');
+            });
+
+            // Theme toggle
+            document.getElementById('theme-toggle').addEventListener('click', () => {
+                document.body.classList.toggle('dark');
+                const icon = document.querySelector('#theme-toggle i');
+                if (document.body.classList.contains('dark')) {
+                    document.body.classList.remove('bg-gradient-to-br', 'from-blue-50', 'to-green-50');
+                    document.body.classList.add('bg-gray-900', 'text-white');
+                    icon.classList.remove('fa-moon');
+                    icon.classList.add('fa-sun');
+                } else {
+                    document.body.classList.add('bg-gradient-to-br', 'from-blue-50', 'to-green-50');
+                    document.body.classList.remove('bg-gray-900', 'text-white');
+                    icon.classList.remove('fa-sun');
+                    icon.classList.add('fa-moon');
+                }
+            });
+
+            // User modal
+            document.getElementById('save-user').addEventListener('click', () => {
+                const username = document.getElementById('username-input').value.trim();
+                if (username) {
+                    currentUser = username;
+                    localStorage.setItem('chat-username', username);
+                    document.getElementById('user-modal').classList.add('hidden');
+                    document.getElementById('user-modal').classList.remove('flex');
+                    
+                    // Add welcome message
+                    const welcomeMsg = {
+                        id: messages.length + 1,
+                        sender: "system",
+                        text: `مرحباً ${username}! تم تسجيل دخولك بنجاح.`,
+                        time: new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }),
+                        type: "system"
+                    };
+                    messages.push(welcomeMsg);
+                    document.getElementById('messages-list').innerHTML = renderMessages(messages);
+                }
+            });
+
+            document.getElementById('cancel-user').addEventListener('click', () => {
+                document.getElementById('user-modal').classList.add('hidden');
+                document.getElementById('user-modal').classList.remove('flex');
+            });
+
+            // Room switching
+            document.addEventListener('click', (e) => {
+                if (e.target.closest('.room-btn')) {
+                    const roomId = e.target.closest('.room-btn').dataset.room;
+                    const room = chatRooms.find(r => r.id == roomId);
+                    if (room) {
+                        document.querySelector('#room-description').textContent = room.description;
+                        document.querySelector('h2.text-xl').textContent = room.name;
+                        
+                        // Add room switch message
+                        const roomMsg = {
+                            id: messages.length + 1,
+                            sender: "system",
+                            text: `تم الانتقال إلى ${room.name}`,
+                            time: new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }),
+                            type: "system"
+                        };
+                        messages.push(roomMsg);
+                        document.getElementById('messages-list').innerHTML = renderMessages(messages);
+                    }
+                }
+            });
+
+            // Message user directly
+            document.addEventListener('click', (e) => {
+                if (e.target.closest('.message-user')) {
+                    const userId = e.target.closest('.message-user').dataset.user;
+                    const user = usersData.find(u => u.id == userId);
+                    if (user) {
+                        document.getElementById('message-input').value = `@${user.name} `;
+                        document.getElementById('message-input').focus();
+                    }
+                }
+            });
+
+            // Voice message simulation
+            document.getElementById('voice-btn').addEventListener('click', () => {
+                const voiceBtn = document.getElementById('voice-btn').querySelector('i');
+                voiceBtn.classList.remove('fa-microphone');
+                voiceBtn.classList.add('fa-stop');
+                
+                setTimeout(() => {
+                    voiceBtn.classList.remove('fa-stop');
+                    voiceBtn.classList.add('fa-microphone');
+                    alert('تم تسجيل رسالة صوتية (عرض تجريبي)');
+                }, 2000);
+            });
+        }
+
+        // Message sending function
+        function sendMessage() {
+            const input = document.getElementById('message-input');
+            const text = input.value.trim();
+            
+            if (!text) return;
+            
+            if (!currentUser) {
+                document.getElementById('user-modal').classList.remove('hidden');
+                document.getElementById('user-modal').classList.add('flex');
+                return;
+            }
+            
+            const newMessage = {
+                id: messages.length + 1,
+                sender: "Me",
+                text: text,
+                time: new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }),
+                type: "sent"
+            };
+            
+            messages.push(newMessage);
+            document.getElementById('messages-list').innerHTML = renderMessages(messages);
+            input.value = '';
+            
+            // Auto-reply simulation
+            setTimeout(() => {
+                const replies = [
+                    "شكراً على رسالتك!",
+                    "أتفق معك في ذلك 👍",
+                    "هذا رائع!",
+                    "معلومات مفيدة، شكراً لك",
+                    "أتمنى لك يوماً سعيداً 😊"
+                ];
+                const randomUser = usersData[Math.floor(Math.random() * usersData.length)];
+                const autoReply = {
+                    id: messages.length + 1,
+                    sender: randomUser.name,
+                    text: replies[Math.floor(Math.random() * replies.length)],
+                    time: new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }),
+                    type: "received",
+                    avatar: randomUser.avatar
+                };
+                messages.push(autoReply);
+                document.getElementById('messages-list').innerHTML = renderMessages(messages);
+                
+                // Update online users count
+                onlineUsers = usersData.filter(user => user.status === 'online').length + 1;
+                document.getElementById('online-count').textContent = onlineUsers;
+            }, 1000 + Math.random() * 2000);
+            
+            // Scroll to bottom
+            const messagesContainer = document.getElementById('messages-container');
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeUI();
+            setupEventHandlers();
+            
+            // Simulate user activity
+            setInterval(() => {
+                const randomUser = usersData[Math.floor(Math.random() * usersData.length)];
+                const activities = [
+                    `${randomUser.name} انضم إلى الغرفة`,
+                    `${randomUser.name} كتب رسالة جديدة`,
+                    `${randomUser.name} غير حالته`
+                ];
+                const activity = activities[Math.floor(Math.random() * activities.length)];
+                
+                // Occasionally add activity notification
+                if (Math.random() > 0.7) {
+                    const activityMsg = {
+                        id: messages.length + 1,
+                        sender: "system",
+                        text: activity,
+                        time: new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }),
+                        type: "system"
+                    };
+                    messages.push(activityMsg);
+                    document.getElementById('messages-list').innerHTML = renderMessages(messages);
+                }
+            }, 10000);
+        });
+
+        // Prevent default anchor behavior
+        document.addEventListener('click', function(event) {
+            const link = event.target.closest('a[href^="#"]');
+            if (!link) return;
+            event.preventDefault();
+            const target = document.querySelector(link.getAttribute('href'));
+            if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,141 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <base target="_self">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>دردشة عربية مجانية</title>
+    <meta name="description" content="تطبيق دردشة عربي مجاني مع واجهة مستخدم حديثة">
+    <meta name="keywords" content="دردشة عربية, شات مجاني, تواصل عربي">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#3B82F6",
+                        secondary: "#10B981",
+                        accent: "#8B5CF6",
+                        dark: "#1F2937",
+                        light: "#F9FAFB"
+                    },
+                    fontFamily: {
+                        'cairo': ['Cairo', 'sans-serif']
+                    },
+                    spacing: {
+                        '18': '4.5rem',
+                        '88': '22rem'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+        }
+        .message-bubble {
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+        .scrollbar-thin {
+            scrollbar-width: thin;
+        }
+        .scrollbar-thin::-webkit-scrollbar {
+            width: 6px;
+        }
+        .scrollbar-thin::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        .scrollbar-thin::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 font-cairo">
+    <!-- Header -->
+    <header class="bg-white shadow-lg">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4 space-x-reverse">
+                    <div class="w-12 h-12 bg-gradient-to-r from-primary to-accent rounded-full flex items-center justify-center">
+                        <i class="fas fa-comments text-white text-xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold text-dark">دردشة عربية مجانية</h1>
+                        <p class="text-gray-600">تواصل مع الأصدقاء باللغة العربية</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-center space-x-4 space-x-reverse">
+                    <div id="online-users" class="hidden md:flex items-center space-x-2 space-x-reverse">
+                        <span class="w-3 h-3 bg-green-500 rounded-full animate-pulse"></span>
+                        <span class="text-gray-600" id="online-count">0</span>
+                        <span class="text-gray-600">مستخدم متصل</span>
+                    </div>
+                    <button id="theme-toggle" class="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors">
+                        <i class="fas fa-moon text-gray-700"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Chat Area -->
+    <main class="container mx-auto px-4 py-6">
+        <div class="flex flex-col lg:flex-row gap-6">
+            <!-- Sidebar - Online Users -->
+            <aside class="lg:w-1/4">
+                <div class="bg-white rounded-xl shadow-lg p-4 mb-6">
+                    <h2 class="text-lg font-semibold text-dark mb-4 border-b pb-2">المستخدمون المتصلون</h2>
+                    <div id="users-list" class="space-y-3 max-h-96 overflow-y-auto scrollbar-thin"></div>
+                </div>
+                
+                <div class="bg-white rounded-xl shadow-lg p-4">
+                    <h2 class="text-lg font-semibold text-dark mb-4 border-b pb-2">غرف الدردشة</h2>
+                    <div id="rooms-list" class="space-y-2"></div>
+                </div>
+            </aside>
+
+            <!-- Chat Container -->
+            <section class="lg:w-3/4">
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden flex flex-col h-[600px]">
+                    <!-- Chat Header -->
+                    <div class="bg-gradient-to-r from-primary to-accent p-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-3 space-x-reverse">
+                                <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-users text-white"></i>
+                                </div>
+                                <div>
+                                    <h2 class="text-xl font-bold text-white">الغرفة العامة</h2>
+                                    <p class="text-white/80 text-sm" id="room-description">دردشة عامة للجميع</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-3 space-x-reverse">
+                                <button id="clear-chat" class="p-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors text-white">
+                                    <i class="fas fa-trash-alt"></i>
+                                    <span class="mr-2">مسح المحادثة</span>
+                                </button>
+                                <button id="emoji-toggle" class="p-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors text-white">
+                                    <i class="far fa-smile"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Messages Area -->
+                    <div id="messages-container" class="flex-1 overflow-y-auto p-4 bg-gray-50 scrollbar-thin">
+                        <div id="messages-list" class="space-y-4"></div>
+                    </div>
+
+                    <!-- Emoji Picker (Hidden by default) -->
+                    <div id="emoji-picker" class="hidden bg-white border-t p-3">
+                        <div class="flex flex-wrap gap-2">
+                            <button class="emoji-btn w-8 h-8 text-lg hover:bg-gray-100 rounded">😊</button>
+                            <button class="emoji-btn w
